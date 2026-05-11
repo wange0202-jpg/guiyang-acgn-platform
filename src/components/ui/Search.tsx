@@ -216,9 +216,9 @@ const loadConventions = (): SearchResult[] => {
 };
 
 // 加载用户数据
-const loadUsers = (): SearchResult[] => {
+const loadUsers = async (): Promise<SearchResult[]> => {
   try {
-    const users = getUsers();
+    const users = await getUsers();
     return users.map((user) => ({
       id: user.id,
       title: user.username,
@@ -253,13 +253,13 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
 
   // 加载所有数据
   useEffect(() => {
-    const loadAllData = () => {
-      const posts = loadPosts();
-      const cosWorks = loadCosWorks();
-      const services = loadServices();
-      const products = loadProducts();
-      const conventions = loadConventions();
-      const users = loadUsers();
+    const loadAllData = async () => {
+      const posts = await loadPosts();
+      const cosWorks = await loadCosWorks();
+      const services = await loadServices();
+      const products = await loadProducts();
+      const conventions = await loadConventions();
+      const users = await loadUsers();
       
       setAllData([...users, ...posts, ...cosWorks, ...services, ...products, ...conventions]);
     };
