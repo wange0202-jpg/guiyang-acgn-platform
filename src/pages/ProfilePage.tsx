@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
 import { Settings, Edit2, Calendar, MessageCircle, LogOut, Shield, ArrowLeft, Camera, Save, X, Lock, Trash2, Users, UserMinus, AlertTriangle, User } from 'lucide-react';
 import { getCurrentUser, logout, updateUserProfile, getUserByUsername, getUsers, deleteUser, formatDateTime } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 import { uploadToImgBB } from '@/lib/imageUpload';
 import { 
   realtimeViews,
@@ -224,18 +225,55 @@ const ProfilePage: React.FC = () => {
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [editUsername, setEditUsername] = useState('');
   const [usernameError, setUsernameError] = useState('');
-  
+
   // 头像上传状态
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [previewAvatar, setPreviewAvatar] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 如果 URL 有用户名参数，查找对应用户；否则显示当前登录用户
-  const profileUser = useMemo(() => {
-    if (username) {
-      return getUserByUsername(decodeURIComponent(username));
-    }
-    return currentUser;
+  // 个人主页用户（从 Supabase 异步加载）
+  const [profileUser, setProfileUser] = useState<User | null>(null);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+
+  // 加载个人主页用户（从 Supabase 异步获取）
+  useEffect(() => {
+    const loadProfileUser = async () => {
+      setIsLoadingProfile(true);
+      try {
+        if (username) {
+          // 从 Supabase profiles 表按 username 查找
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('username', decodeURIComponent(username))
+            .single();
+
+          if (data && !error) {
+            const { data: { user } } = await supabase.auth.getUser();
+            const userObj: User = {
+              id: data.id,
+              account: data.username,
+              username: data.username,
+              avatar: data.avatar_url || undefined,
+              role: data.role,
+              createdAt: data.created_at || '',
+            };
+            setProfileUser(userObj);
+          } else {
+            setProfileUser(null);
+          }
+        } else {
+          // 没有用户名参数，显示当前登录用户
+          setProfileUser(currentUser);
+        }
+      } catch (e) {
+        console.error('Load profile user failed:', e);
+        setProfileUser(null);
+      } finally {
+        setIsLoadingProfile(false);
+      }
+    };
+    loadProfileUser();
   }, [username, currentUser]);
 
   // 是否是查看自己的主页
@@ -437,6 +475,15 @@ const ProfilePage: React.FC = () => {
             去登录
           </Link>
         </div>
+      </div>
+    );
+  }
+
+  // 加载中
+  if (isLoadingProfile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 pt-24 pb-20 flex items-center justify-center">
+        <div className="text-white/70 text-lg">加载中...</div>
       </div>
     );
   }
