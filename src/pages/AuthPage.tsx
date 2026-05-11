@@ -1,40 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Lock, KeyRound, ArrowLeft, Sparkles, AlertCircle, Check } from 'lucide-react';
-import { login, register, getCurrentUser, initDefaultUsers, checkAccountExists } from '../lib/auth';
+import { User, Lock, KeyRound, ArrowLeft, Sparkles } from 'lucide-react';
+import { login, register, getCurrentUser, initDefaultUsers } from '../lib/auth';
 
 const AuthPage: React.FC = () => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
-  const [account, setAccount] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [accountChecked, setAccountChecked] = useState(false);
-  const [accountExists, setAccountExists] = useState(false);
 
   useEffect(() => {
-    // 初始化默认用户
     initDefaultUsers();
-    
-    // 如果已登录，跳转到首页
     if (getCurrentUser()) {
       navigate('/');
     }
   }, [navigate]);
-
-  // 检查账号是否已存在（注册时）
-  useEffect(() => {
-    if (!isLogin && account.length >= 3) {
-      const exists = checkAccountExists(account);
-      setAccountExists(exists);
-      setAccountChecked(true);
-    } else {
-      setAccountChecked(false);
-      setAccountExists(false);
-    }
-  }, [account, isLogin]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,8 +27,8 @@ const AuthPage: React.FC = () => {
     try {
       if (isLogin) {
         // 登录
-        if (!account.trim()) {
-          setError('请输入账号');
+        if (!email.trim()) {
+          setError('请输入邮箱');
           setLoading(false);
           return;
         }
@@ -54,28 +37,22 @@ const AuthPage: React.FC = () => {
           setLoading(false);
           return;
         }
-        const user = await login(account, password);
+        const user = await login(email, password);
         if (user) {
-          console.log('Login success:', user);
           navigate('/');
-          window.location.reload(); // 刷新页面以更新状态
+          window.location.reload();
         } else {
-          setError('账号或密码错误');
+          setError('邮箱或密码错误');
         }
       } else {
         // 注册
-        if (!account.trim()) {
-          setError('请输入账号');
+        if (!email.trim()) {
+          setError('请输入邮箱');
           setLoading(false);
           return;
         }
-        if (account.length < 3) {
-          setError('账号至少3个字符');
-          setLoading(false);
-          return;
-        }
-        if (accountExists) {
-          setError('该账号已被注册');
+        if (!email.includes('@')) {
+          setError('请输入有效的邮箱地址');
           setLoading(false);
           return;
         }
@@ -89,9 +66,8 @@ const AuthPage: React.FC = () => {
           setLoading(false);
           return;
         }
-        const result = await register(account, username, password);
+        const result = await register(email, username, password);
         if (result.success && result.user) {
-          console.log('Register success:', result.user);
           navigate('/');
           window.location.reload();
         } else {
@@ -140,35 +116,19 @@ const AuthPage: React.FC = () => {
 
           {/* 表单 */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* 账号 - 登录和注册都需要 */}
+            {/* 邮箱 */}
             <div>
-              <label className="block text-white/70 text-sm mb-2">账号</label>
+              <label className="block text-white/70 text-sm mb-2">邮箱</label>
               <div className="relative">
                 <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
                 <input
-                  type="text"
-                  value={account}
-                  onChange={(e) => setAccount(e.target.value)}
-                  placeholder="请输入账号"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-10 py-3 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="请输入邮箱"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
                 />
-                {/* 账号状态图标 */}
-                {!isLogin && accountChecked && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    {accountExists ? (
-                      <AlertCircle className="w-5 h-5 text-red-400" />
-                    ) : (
-                      <Check className="w-5 h-5 text-green-400" />
-                    )}
-                  </div>
-                )}
               </div>
-              {/* 账号提示 */}
-              {!isLogin && accountChecked && (
-                <p className={`text-xs mt-1 ${accountExists ? 'text-red-400' : 'text-green-400'}`}>
-                  {accountExists ? '该账号已被注册' : '账号可用'}
-                </p>
-              )}
             </div>
 
             {/* 用户名 - 仅注册时显示 */}
@@ -191,6 +151,7 @@ const AuthPage: React.FC = () => {
               </div>
             )}
 
+            {/* 密码 */}
             <div>
               <label className="block text-white/70 text-sm mb-2">
                 密码 {!isLogin && <span className="text-white/40">(请牢记，无法找回)</span>}
@@ -231,27 +192,15 @@ const AuthPage: React.FC = () => {
               onClick={() => {
                 setIsLogin(!isLogin);
                 setError('');
-                setAccount('');
+                setEmail('');
                 setPassword('');
                 setUsername('');
-                setAccountChecked(false);
               }}
               className="text-pink-400 hover:text-pink-300 text-sm transition-colors"
             >
               {isLogin ? '还没有账号？立即注册' : '已有账号？立即登录'}
             </button>
           </div>
-
-          {/* 默认账号提示 */}
-          {isLogin && (
-            <div className="mt-6 p-4 bg-white/5 rounded-xl">
-              <p className="text-white/50 text-xs mb-2">测试账号：</p>
-              <div className="space-y-1 text-xs text-white/40">
-                <p>站主：admin001 / 5201314</p>
-                <p>用户：user001 / 5201314</p>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
