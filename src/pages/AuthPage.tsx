@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { User, Lock, KeyRound, ArrowLeft, Sparkles } from 'lucide-react';
 import { login, register, getCurrentUser, initDefaultUsers } from '../lib/auth';
 
+// 2026-05-11 更新：改为邮箱登录/注册
+
 const AuthPage: React.FC = () => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);

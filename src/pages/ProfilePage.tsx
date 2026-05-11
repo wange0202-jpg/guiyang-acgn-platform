@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
-import { Settings, Edit2, Calendar, MessageCircle, LogOut, Shield, ArrowLeft, Camera, Save, X, Lock, Trash2, Users, UserMinus, AlertTriangle } from 'lucide-react';
+import { Settings, Edit2, Calendar, MessageCircle, LogOut, Shield, ArrowLeft, Camera, Save, X, Lock, Trash2, Users, UserMinus, AlertTriangle, User } from 'lucide-react';
 import { getCurrentUser, logout, updateUserProfile, getUserByUsername, getUsers, deleteUser, formatDateTime } from '@/lib/auth';
 import { uploadToImgBB } from '@/lib/imageUpload';
 import { 

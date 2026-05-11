@@ -7,6 +7,42 @@
 create extension if not exists "uuid-ossp";
 
 -- ============================================================
+-- 0. 帖子表 (posts) - 论坛讨论区
+-- ============================================================
+create table if not exists public.posts (
+  id uuid default uuid_ossp() primary key,
+  user_id uuid references auth.users on delete cascade not null,
+  title text not null,
+  content text default '',
+  section text check (section in ('anime', 'manga', 'cos', 'discussion')) not null,
+  images text[] default '{}',
+  views int default 0,
+  likes int default 0,
+  comments_count int default 0,
+  created_at timestamptz default now()
+);
+
+alter table public.posts enable row level security;
+
+create policy "Posts are viewable by everyone."
+  on posts for select using (true);
+
+create policy "Authenticated users can create posts."
+  on posts for insert with check (auth.role() = 'authenticated');
+
+create policy "Authors and admins can update posts."
+  on posts for update using (
+    auth.uid() = user_id or 
+    exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+  );
+
+create policy "Authors and admins can delete posts."
+  on posts for delete using (
+    auth.uid() = user_id or 
+    exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+  );
+
+-- ============================================================
 -- 1. 用户表 (profiles) - 扩展 Supabase Auth 内置用户系统
 -- ============================================================
 create table if not exists public.profiles (
@@ -44,6 +80,8 @@ create table if not exists public.conventions (
   creator_username text not null,
   is_hot boolean default false,
   view_count int default 0,
+  likes int default 0,
+  status text check (status in ('pending', 'approved', 'rejected')) default 'pending',
   created_at timestamptz default now()
 );
 
@@ -191,8 +229,8 @@ create policy "Sellers and admins can delete products."
 -- ============================================================
 create table if not exists public.comments (
   id uuid default uuid_ossp() primary key,
-  post_id uuid not null,
-  post_type text check (post_type in ('cos_work', 'service', 'product')) not null,
+  target_id uuid not null,
+  target_type text check (target_type in ('post', 'cos_work', 'service', 'product')) not null,
   content text not null,
   author_id uuid references auth.users not null,
   author_username text not null,
@@ -219,11 +257,11 @@ create policy "Authors and admins can delete comments."
 -- ============================================================
 create table if not exists public.likes (
   id uuid default uuid_ossp() primary key,
-  post_id uuid not null,
-  post_type text check (post_type in ('cos_work', 'service', 'product')) not null,
+  target_id uuid not null,
+  target_type text check (target_type in ('post', 'convention', 'cos_work', 'service', 'product')) not null,
   user_id uuid references auth.users not null,
   created_at timestamptz default now(),
-  unique(post_id, user_id)
+  unique(target_id, user_id)
 );
 
 alter table public.likes enable row level security;
@@ -262,23 +300,15 @@ create policy "Users can unfollow."
 -- ============================================================
 -- 索引优化
 -- ============================================================
+create index if not exists idx_posts_created_at on posts(created_at desc);
 create index if not exists idx_conventions_created_at on conventions(created_at desc);
 create index if not exists idx_cos_works_created_at on cos_works(created_at desc);
 create index if not exists idx_services_created_at on services(created_at desc);
 create index if not exists idx_products_created_at on products(created_at desc);
-create index if not exists idx_comments_post_id on comments(post_id);
-create index if not exists idx_likes_post_id on likes(post_id);
+create index if not exists idx_comments_target_id on comments(target_id);
+create index if not exists idx_likes_target_id on likes(target_id);
 create index if not exists idx_follows_follower on follows(follower_id);
 create index if not exists idx_follows_following on follows(following_id);
-
--- ============================================================
--- 存储桶设置 (需要在 Supabase Dashboard > Storage 中手动创建)
--- 或使用以下 SQL 创建 (需要 service role key)
--- ============================================================
--- 插入存储桶 (可选，建议在 Dashboard 手动创建更直观)
--- insert into storage.buckets (id, name, public) values ('avatars', 'avatars', true);
--- insert into storage.buckets (id, name, public) values ('post-images', 'post-images', true);
--- insert into storage.buckets (id, name, public) values ('convention-images', 'convention-images', true);
 
 -- ============================================================
 -- 完成提示
