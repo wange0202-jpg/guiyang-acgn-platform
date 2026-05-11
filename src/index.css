@@ -1,0 +1,396 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 星星闪烁动画 */
+.stars-container {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.star {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.8),
+              0 0 12px 4px rgba(255, 255, 255, 0.4);
+  animation: twinkle 3s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+/* Logo呼吸发光 */
+.glowing-logo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: logo-glow 3s ease-in-out infinite;
+}
+
+.logo-text {
+  font-size: 1.5rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #ec4899, #8b5cf6, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 30px rgba(236, 72, 153, 0.5);
+}
+
+.logo-sub {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.2em;
+}
+
+.logo-glow {
+  position: absolute;
+  inset: -20px;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.4) 0%, transparent 70%);
+  filter: blur(20px);
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+@keyframes logo-glow {
+  0%, 100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.05);
+    filter: brightness(1.2);
+  }
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+/* 标题渐变流动 */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.animate-shimmer {
+  background-size: 200% auto;
+  animation: shimmer 4s linear infinite;
+}
+
+/* 卡片悬停上浮+发光 */
+.anime-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1.5rem;
+  backdrop-filter: blur(10px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeInUp 0.8s ease-out backwards;
+  position: relative;
+  overflow: visible;
+}
+
+.anime-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(236, 72, 153, 0.15) 0%,
+    transparent 50%
+  );
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none !important;
+  z-index: 0 !important;
+}
+
+.anime-card:hover::before {
+  opacity: 1;
+}
+
+.anime-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.anime-card button,
+.anime-card input,
+.anime-card textarea,
+.anime-card select,
+.anime-card a {
+  position: relative;
+  z-index: 2;
+}
+
+.anime-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(236, 72, 153, 0.4);
+  box-shadow: 
+    0 20px 40px -10px rgba(236, 72, 153, 0.3),
+    0 0 60px -10px rgba(236, 72, 153, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 导航链接 */
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.3s;
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* 发光按钮 */
+.glow-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.glow-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+  transform: translateX(-100%);
+  transition: transform 0.5s;
+}
+
+.glow-button:hover::before {
+  transform: translateX(100%);
+}
+
+.glow-button.primary {
+  background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+  color: white;
+  box-shadow: 0 4px 20px rgba(236, 72, 153, 0.4);
+}
+
+.glow-button.primary:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 8px 30px rgba(236, 72, 153, 0.6);
+}
+
+.glow-button.secondary {
+  background: rgba(139, 92, 246, 0.2);
+  border: 2px solid #8b5cf6;
+  color: #c4b5fd;
+}
+
+.glow-button.secondary:hover {
+  background: rgba(139, 92, 246, 0.4);
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 8px 30px rgba(139, 92, 246, 0.4);
+}
+
+.glow-button.tertiary {
+  background: rgba(6, 182, 212, 0.2);
+  border: 2px solid #06b6d4;
+  color: #67e8f9;
+}
+
+.glow-button.tertiary:hover {
+  background: rgba(6, 182, 212, 0.4);
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 8px 30px rgba(6, 182, 212, 0.4);
+}
+
+.glow-button.quaternary {
+  background: rgba(245, 158, 11, 0.2);
+  border: 2px solid #f59e0b;
+  color: #fcd34d;
+}
+
+.glow-button.quaternary:hover {
+  background: rgba(245, 158, 11, 0.4);
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 8px 30px rgba(245, 158, 11, 0.4);
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(236, 72, 153, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(236, 72, 153, 0.7);
+}
+
+/* 输入框样式 */
+input, textarea {
+  font-family: var(--font-sans);
+}
+
+/* 选中文字样式 */
+::selection {
+  background: rgba(236, 72, 153, 0.4);
+  color: white;
+}
+
+/* 禁用卡片hover transform */
+.transform-none {
+  transform: none !important;
+}
+.transform-none:hover {
+  transform: none !important;
+}
+
+/* 输入框样式优化 */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="search"],
+textarea {
+  caret-color: white;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  pointer-events: auto !important;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="search"]:focus,
+textarea:focus {
+  caret-color: white;
+  outline: none;
+}
+
+/* 强制所有输入元素可交互 */
+input,
+textarea,
+select {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  pointer-events: auto !important;
+}
+
+/* 确保输入框可编辑 */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+textarea {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  cursor: text !important;
+}
+
+/* 强制输入框可交互 */
+.interactive-input {
+  position: relative !important;
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+  cursor: text !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+.interactive-input:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.5) !important;
+}
+
+/* 编辑区域禁用伪元素 */
+.edit-section {
+  position: relative;
+  z-index: 9998 !important;
+}
+
+.edit-section::before,
+.edit-section::after {
+  display: none !important;
+}
