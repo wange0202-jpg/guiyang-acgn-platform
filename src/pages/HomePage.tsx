@@ -261,8 +261,10 @@ const sections = [
 
 // 获取热门帖子（排除已移除的，按点击量排序，取前4个）
 const getHotPosts = (posts: Post[], pinnedIds: string[], excludedIds: string[] = []): Post[] => {
+  // 确保 posts 是数组
+  const safePosts = Array.isArray(posts) ? posts : [];
   // 排除已移除的帖子
-  const availablePosts = posts.filter(p => !excludedIds.includes(p.id));
+  const availablePosts = safePosts.filter(p => p && !excludedIds.includes(p.id));
   
   // 优先使用置顶的帖子
   const pinnedPosts = availablePosts.filter(p => pinnedIds.includes(p.id));
@@ -491,8 +493,9 @@ const HomePage: React.FC = () => {
   
   // 根据专区筛选帖子（包含所有四个专区：漫展、COS、服务、交易）
   const filteredPosts = useMemo(() => {
-    // 转换服务数据为帖子格式
-    const servicePosts: Post[] = services.map(s => ({
+    // 转换服务数据为帖子格式（容错处理）
+    const safeServices = Array.isArray(services) ? services : [];
+    const servicePosts: Post[] = safeServices.map(s => ({
       id: s.id,
       title: `${s.nickname} - ${s.category === 'makeup' ? '妆娘' : s.category === 'wig' ? '毛娘' : s.category === 'photographer' ? '摄影师' : '道具师'}`,
       section: '服务专区',
@@ -504,8 +507,9 @@ const HomePage: React.FC = () => {
       likes: 0,
     }));
 
-    // 转换商品数据为帖子格式
-    const productPosts: Post[] = products.map(p => ({
+    // 转换商品数据为帖子格式（容错处理）
+    const safeProducts = Array.isArray(products) ? products : [];
+    const productPosts: Post[] = safeProducts.map(p => ({
       id: p.id,
       title: p.title,
       section: '交易专区',
@@ -594,23 +598,25 @@ const HomePage: React.FC = () => {
           cosWorksApi.getAll(),
         ]);
         
-        // 转换 posts
-        const formattedPosts = postsData.map(p => ({
-          id: p.id,
-          title: p.title,
+        // 转换 posts（容错处理）
+        const safePostsData = Array.isArray(postsData) ? postsData : [];
+        const formattedPosts = safePostsData.map(p => ({
+          id: p.id || '',
+          title: p.title || '',
           section: p.section === 'anime' ? '动漫讨论' : 
                     p.section === 'manga' ? '漫画讨论' : 
                     p.section === 'cos' ? 'COS讨论' : '综合讨论',
           sectionIcon: '📝',
           sectionColor: 'from-violet-500 to-purple-500',
           author: p.author?.username || '未知',
-          createdAt: new Date(p.created_at).toLocaleDateString(),
+          createdAt: p.created_at ? new Date(p.created_at).toLocaleDateString() : '',
           views: p.views || 0,
           likes: p.likes || 0,
         }));
         
-        // 转换 conventions
-        const formattedConventions = conventionsData.map(c => ({
+        // 转换 conventions（容错处理）
+        const safeConventionsData = Array.isArray(conventionsData) ? conventionsData : [];
+        const formattedConventions = safeConventionsData.map(c => ({
           id: c.id,
           title: c.title,
           description: c.description,
