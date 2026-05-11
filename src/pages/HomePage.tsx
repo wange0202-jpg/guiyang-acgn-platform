@@ -479,9 +479,10 @@ const HomePage: React.FC = () => {
     
     // 添加未置顶的帖子（按浏览量排序）
     const pinnedPostIds = pinnedHotTopics.map(t => t.postId);
+    const safePostsForTopics = Array.isArray(posts) ? posts : [];
     
-    const unpinnedPosts = posts
-      .filter(p => !pinnedPostIds.includes(p.id) && !removedPostIds.includes(p.id))
+    const unpinnedPosts = safePostsForTopics
+      .filter(p => p && !pinnedPostIds.includes(p.id) && !removedPostIds.includes(p.id))
       .sort((a, b) => b.views - a.views)
       .slice(0, 4);
     
@@ -522,12 +523,15 @@ const HomePage: React.FC = () => {
       price: p.price,
     }));
 
-    // 合并所有帖子
-    const allPosts = [...posts, ...servicePosts, ...productPosts];
+    // 合并所有帖子（容错处理）
+    const safePosts2 = Array.isArray(posts) ? posts : [];
+    const safeServicePosts = Array.isArray(servicePosts) ? servicePosts : [];
+    const safeProductPosts = Array.isArray(productPosts) ? productPosts : [];
+    const allPosts = [...safePosts2, ...safeServicePosts, ...safeProductPosts];
     
     // 显示所有四个专区
     const validSections = ['漫展专区', 'COS专区', '服务专区', '交易专区'];
-    const sectionPosts = allPosts.filter(post => validSections.includes(post.section));
+    const sectionPosts = allPosts.filter(post => post && validSections.includes(post.section));
     
     if (activeSection === 'all') {
       return sectionPosts;
